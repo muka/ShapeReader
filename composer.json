@@ -1,0 +1,6 @@
+{
+    "autoload": {
+        "psr-0": {"muka\\ShapeReader": "src/"}
+    }
+}
+
