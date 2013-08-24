@@ -14,13 +14,13 @@ use muka\ShapeReader\ShapeReader;
 $shpReader = new ShapeReader("./test/5961.shp");
 
 $i=0;
-while ($record = $shpReader->shp->getNext()) {
+while ($record = $shpReader->getNext() and $i < 2) {
 
     $shp_data = $record->getData();
-    var_dump($shp_data);
+//    var_dump($shp_data);
     //Dump the information
-//    $dbf_data = $record->dbf->getData();
-//    var_dump($dbf_data);
+    $dbf_data = $record->getDbfData();
+    var_dump($dbf_data);
 
 
 

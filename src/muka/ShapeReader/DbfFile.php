@@ -7,9 +7,13 @@ class DbfFile {
     private $filename;
     private $data;
     private $record_number = 0;
+    private $dbf;
+    private $options;
 
-    public function __construct($shpFilename) {
+    public function __construct($shpFilename, $record_number, $options = array()) {
         $this->filename = $this->getFilename($shpFilename);
+        $this->record_number = $record_number;
+        $this->options = $options;
     }
 
     public function getFilename($filename) {
@@ -78,7 +82,17 @@ class DbfFile {
     private function load() {
         $this->open();
         $this->data = dbase_get_record_with_names($this->dbf, $this->record_number);
+        if(!isset($this->options['normalize'])
+                || (isset($this->options['normalize']) && $this->options['normalize'])) {
+            $this->normalize();
+        }
         $this->close();
+    }
+
+    private function normalize() {
+        foreach($this->data as $key => &$value) {
+            $value = trim(utf8_encode($value));
+        }
     }
 
 }
