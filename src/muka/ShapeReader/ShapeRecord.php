@@ -2,34 +2,45 @@
 
 namespace muka\ShapeReader;
 
-class ShapeRecord extends ShapeFile
-{
+class ShapeRecord extends ShapeReader {
 
     private $record_number;
     private $content_length;
     private $record_shape_type;
 
+    /**
+      0 Null Shape
+      1 Point
+      3 PolyLine
+      5 Polygon
+      8 MultiPoint
+      11 PointZ
+      13 PolyLineZ
+      15 PolygonZ
+      18 MultiPointZ
+      21 PointM
+      23 PolyLineM
+      25 PolygonM
+      28 MultiPointM
+      31 MultiPatch
+     */
     private $record_class = array(
       0 => "RecordNull",
       1 => "RecordPoint",
-      8 => "RecordMultiPoint",
       3 => "RecordPolyLine",
-      5 => "RecordPolygon"
+      5 => "RecordPolygon",
+      8 => "RecordMultiPoint",
     );
+    private $dbf;
 
-    public function __construct(&$fp, $filename, $options){
-		$this->fp = $fp;
-		$this->fpos = ftell($fp);
-		$this->options = $options;
-
-		if (feof($fp)) {
-            return;
-		}
-
-		$this->readHeader();
-		$this->filename = $filename;
-
-	}
+    public function __construct(&$fp, $filename, $options, $dbf= null) {
+        $this->fp = $fp;
+        $this->fpos = ftell($fp);
+        $this->options = $options;
+        $this->filename = $filename;
+        $this->dbf = $dbf;
+        $this->readHeader();
+    }
 
     public function getNextRecordPosition() {
         $nextRecordPosition = $this->fpos + ((4 + $this->content_length ) * 2);
@@ -37,14 +48,17 @@ class ShapeRecord extends ShapeFile
     }
 
     public function getDbfData() {
-        $dbf = new DbfFile($this->filename, $this->record_number);
-        return $dbf->getData();
+        if($this->dbf) {
+            return $this->dbf->getData($this->record_number);
+        }
+        return array();
     }
 
     public function getData() {
 
         if (!$this->data) {
-            $function_name = "read" . $this->getRecordClass();
+            $recordType = $this->getRecordClass();
+            $function_name = "read{$recordType}";
             $this->data = $this->{$function_name}($this->fp, $this->options);
         }
 
@@ -55,6 +69,19 @@ class ShapeRecord extends ShapeFile
         $this->record_number = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->content_length = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->record_shape_type = $this->readAndUnpack("i", fread($this->fp, 4));
+    }
+
+    private function getRecordClass() {
+
+        if (!isset($this->record_class[$this->record_shape_type])) {
+            throw new Exception\ShapeFileException(sprintf("Unsupported record type encountered."));
+        }
+
+        if (!method_exists($this, "read" . $this->record_class[$this->record_shape_type])) {
+            throw new Exception\ShapeFileException(sprintf("Record type %s not implemented.", $this->record_shape_type));
+        }
+
+        return $this->record_class[$this->record_shape_type];
     }
 
     /**
@@ -109,8 +136,7 @@ class ShapeRecord extends ShapeFile
 
             $points_read = 0;
             foreach ($data["parts"] as $part_index => $point_index) {
-                if (!isset($data["parts"][$part_index]["points"])
-                        || !is_array($data["parts"][$part_index]["points"])) {
+                if (!isset($data["parts"][$part_index]["points"]) || !is_array($data["parts"][$part_index]["points"])) {
                     $data["parts"][$part_index] = array();
                     $data["parts"][$part_index]["points"] = array();
                 }
@@ -130,17 +156,6 @@ class ShapeRecord extends ShapeFile
         return $this->readRecordPolyLine($fp, $options);
     }
 
-    private function getRecordClass() {
 
-        if (!isset($this->record_class[$this->record_shape_type])) {
-            throw new Exception\ShapeFileException(sprintf("Record type %s not supported.", $this->record_shape_type));
-        }
-
-        if (!method_exists($this, "read" . $this->record_class[$this->record_shape_type])) {
-            throw new Exception\ShapeFileException(sprintf("Record type %s not implemented.", $this->record_shape_type));
-        }
-
-        return $this->record_class[$this->record_shape_type];
-    }
 
 }

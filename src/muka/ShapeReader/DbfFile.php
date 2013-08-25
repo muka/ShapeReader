@@ -10,9 +10,8 @@ class DbfFile {
     private $dbf;
     private $options;
 
-    public function __construct($shpFilename, $record_number, $options = array()) {
+    public function __construct($shpFilename, $options = array()) {
         $this->filename = $this->getFilename($shpFilename);
-        $this->record_number = $record_number;
         $this->options = $options;
     }
 
@@ -33,11 +32,10 @@ class DbfFile {
         return $filename;
     }
 
-    public function getData() {
+    public function getData($record_number) {
 
-        if(!$this->data) {
-            $this->load();
-        }
+        $this->record_number = $record_number;
+        $this->load();
 
         return $this->data;
     }

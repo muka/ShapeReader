@@ -1,6 +1,20 @@
 {
+    "name": "muka/ShapeReader",
+    "description": "Library to read shapefile and associated dbf files",
+    "keywords": ["Shapefile", "shp", "dbf", "geospatial"],
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Lopez Mateos"
+        },
+        {
+            "name": "David Granqvist"
+        },
+        {
+            "name": "Luca Capra"
+        }
+    ],
     "autoload": {
         "psr-0": {"muka\\ShapeReader": "src/"}
     }
 }
-
