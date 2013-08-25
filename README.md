@@ -5,9 +5,9 @@ Based on the great work of Juan Carlos Gonzalez Ulloa and David Granqvist
 
 A copy of the original work is available at http://www.phpclasses.org/package/1741-PHP-Read-vectorial-data-from-geographic-shape-files.html
 
-`This library is meant to read vectorial information from shape files in the SHP format. 
-The SHP file format is an open standard for storing vectorial information that is used to distribute geographical information. 
-Plenty of commercial and open source applications are able to read from it.`
+`This library is meant to read vectorial information from shape files in the SHP format.`
+`The SHP file format is an open standard for storing vectorial information that is used to distribute geographical information.`
+`Plenty of commercial and open source applications are able to read from it.`
 
 ## Requirements 
 PHP version should be > 5.3.2
