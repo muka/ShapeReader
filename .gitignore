@@ -1,2 +1,3 @@
-nbproject
-vendor
+nbproject/
+vendor/
+composer.lock
