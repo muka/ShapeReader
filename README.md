@@ -9,7 +9,7 @@ A copy of the original work is available at http://www.phpclasses.org/package/17
 `The SHP file format is an open standard for storing vectorial information that is used to distribute geographical information.`
 `Plenty of commercial and open source applications are able to read from it.`
 
-## Requirements 
+### Requirements 
 PHP version should be > 5.3.2
 
 To open the DBF related database you need the dbase extension available as PECL package.
@@ -17,7 +17,7 @@ To open the DBF related database you need the dbase extension available as PECL 
     pecl install dbase
     echo "extension=dbase.so" > /etc/php5/conf.d/dbase.ini
 
-## Usage 
+### Usage 
 See examples folder for details.
 
     $shpReader = new ShapeReader("./test/5961.shp");
@@ -36,9 +36,9 @@ See examples folder for details.
         $i++;
     }
 
-## Changelog 
+### Changelog 
 2013-08-24 - Base refactor, added namespace support, composer and test cases
 
-## License 
+### License 
 GNU General Public License
 http://opensource.org/licenses/GPL-2.0
