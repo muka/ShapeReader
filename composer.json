@@ -1,6 +1,6 @@
 {
     "name": "muka/ShapeReader",
-    "description": "Library to read shapefile and associated dbf files",
+    "description": "A PHP library to parse ESRI Shape files",
     "keywords": ["Shapefile", "shp", "dbf", "geospatial"],
     "license": "GPL",
     "authors": [

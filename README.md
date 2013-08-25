@@ -1,5 +1,5 @@
 = ShapeReader =
-A library to parse Shp/Dbf files.
+A PHP library to parse ESRI Shape files.
 
 Based on the great work of Juan Carlos Gonzalez Ulloa and David Granqvist
 A copy of the original work is available at http://www.phpclasses.org/package/1741-PHP-Read-vectorial-data-from-geographic-shape-files.html
@@ -37,4 +37,4 @@ See examples folder for details.
 
 = License =
 GNU General Public License
-http://opensource.org/licenses/GPL-3.0
+http://opensource.org/licenses/GPL-2.0
