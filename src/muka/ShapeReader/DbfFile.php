@@ -33,7 +33,6 @@ class DbfFile {
     }
 
     public function getData($record_number) {
-
         $this->record_number = $record_number;
         $this->load();
 

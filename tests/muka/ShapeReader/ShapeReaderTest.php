@@ -23,7 +23,6 @@ class ShapeReaderTest extends \PHPUnit_Framework_TestCase {
 
         $rows = 0;
         while ($record = $shpReader->getNext()) {
-            $dbf = $record->getDbfData();
             $rows++;
         }
 
@@ -36,10 +35,10 @@ class ShapeReaderTest extends \PHPUnit_Framework_TestCase {
         $shpReader = $this->loadShp();
 
         $rows = 0;
-        $rowIndex = 11358;
+        $rowID = 11358;
         while ($record = $shpReader->getNext()) {
             $dbf = $record->getDbfData();
-            if($dbf['ID'] == $rowIndex) {
+            if($dbf['ID'] == $rowID) {
                 break;
             }
             $rows++;
