@@ -54,6 +54,10 @@ class ShapeRecord extends ShapeReader {
         return array();
     }
 
+    public function getShpData() {
+       return $this->getData();
+    }
+
     public function getData() {
 
         if (!$this->data) {
