@@ -7,6 +7,7 @@ class ShapeRecord extends ShapeReader {
     private $record_number;
     private $content_length;
     private $record_shape_type;
+    private $point_count = 0;
 
     /**
       0 Null Shape
