@@ -26,6 +26,7 @@ class ShapeReader {
     private $shp_type = 0;
     private $options;
     private $bbox = array();
+    private $point_count = 0;
 
     public $XY_POINT_RECORD_LENGTH = 16;
 
