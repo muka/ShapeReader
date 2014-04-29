@@ -101,4 +101,12 @@ class ShapeReader {
         return current(unpack($type, $data));
     }
 
+    public function getShapeType() {
+        return $this->shp_type;
+    }
+
+    public function getBbox() {
+        return $this->bbox;
+    }
+
 }
