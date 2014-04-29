@@ -23,7 +23,6 @@ class ShapeReader {
     private $dbf;
     private $fpos = 100;
     private $fsize = 0;
-    private $shp_type = 0;
     private $options;
     private $bbox = array();
     private $point_count = 0;
@@ -31,6 +30,8 @@ class ShapeReader {
     public $XY_POINT_RECORD_LENGTH = 16;
 
     protected $data;
+
+    private $shp_type = 0;
 
     public function __construct($filename, $options = array()) {
 
@@ -100,13 +101,4 @@ class ShapeReader {
 
         return current(unpack($type, $data));
     }
-
-    public function getShapeType() {
-        return $this->shp_type;
-    }
-
-    public function getBbox() {
-        return $this->bbox;
-    }
-
 }

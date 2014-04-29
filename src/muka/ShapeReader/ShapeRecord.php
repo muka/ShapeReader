@@ -64,7 +64,11 @@ class ShapeRecord extends ShapeReader {
         if (!$this->data) {
             $recordType = $this->getRecordClass();
             $function_name = "read{$recordType}";
+
             $this->data = $this->{$function_name}($this->fp, $this->options);
+            $this->data['type'] = $this->getTypeLabel();
+            $this->data['typeCode'] = $this->getTypeCode();
+
         }
 
         return $this->data;
@@ -74,6 +78,14 @@ class ShapeRecord extends ShapeReader {
         $this->record_number = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->content_length = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->record_shape_type = $this->readAndUnpack("i", fread($this->fp, 4));
+    }
+
+    public function getTypeCode() {
+        return $this->record_shape_type;
+    }
+
+    public function getTypeLabel() {
+        return str_replace("Record", "", $this->getRecordClass());
     }
 
     private function getRecordClass() {
@@ -124,7 +136,9 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readRecordPolyLine(&$fp, $options = null) {
+
         $data = $this->readBoundingBox($fp);
+
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
 
