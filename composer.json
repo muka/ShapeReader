@@ -1,5 +1,5 @@
 {
-    "name": "muka/ShapeReader",
+    "name": "muka/shape-reader",
     "description": "A PHP library to parse ESRI Shape files",
     "keywords": ["Shapefile", "shp", "dbf", "geospatial"],
     "license": "GPL",
