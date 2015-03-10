@@ -16,6 +16,8 @@
 
 namespace muka\ShapeReader;
 
+use muka\ShapeReader\Exception\ShapeFileException;
+
 class ShapeReader {
 
     private $filename;
@@ -24,7 +26,7 @@ class ShapeReader {
     private $fpos = 100;
     private $fsize = 0;
     private $options;
-    private $bbox = array();
+    private $bbox = [];
     private $point_count = 0;
 
     public $XY_POINT_RECORD_LENGTH = 16;
@@ -33,7 +35,7 @@ class ShapeReader {
 
     private $shp_type = 0;
 
-    public function __construct($filename, $options = array()) {
+    public function __construct($filename, $options = []) {
 
         $this->filename = $filename;
 
@@ -56,7 +58,7 @@ class ShapeReader {
 
     private function fopen() {
         if (!is_readable($this->filename)) {
-            throw new Exception\ShapeFileException(sprintf("%s is not readable.", $this->filename));
+            throw new ShapeFileException(sprintf("%s is not readable.", $this->filename));
         }
         $this->fp   = fopen($this->filename, "rb");
         $fstat = fstat($this->fp);
@@ -84,7 +86,7 @@ class ShapeReader {
 
     protected function readBoundingBox(&$fp) {
 
-        $data = array();
+        $data = [];
         $data["xmin"] = $this->readAndUnpack("d", fread($fp, 8));
         $data["ymin"] = $this->readAndUnpack("d", fread($fp, 8));
         $data["xmax"] = $this->readAndUnpack("d", fread($fp, 8));

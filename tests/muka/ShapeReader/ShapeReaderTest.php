@@ -1,7 +1,5 @@
 <?php
 
-namespace muka\ShapeReader\Tests;
-
 use muka\ShapeReader\ShapeReader;
 
 class ShapeReaderTest extends \PHPUnit_Framework_TestCase {
