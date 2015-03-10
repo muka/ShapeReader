@@ -2,27 +2,32 @@
 
 namespace muka\ShapeReader\Tests;
 
-require __DIR__ . '/../../../vendor/autoload.php';
-
 use muka\ShapeReader\ShapeReader;
 
 class ShapeReaderTest extends \PHPUnit_Framework_TestCase {
 
-    private $worldcities_shape = "./tests/support/worldcities/worldcities.shp";
+    /**
+     * @var String
+     */
+    private $worldcities_shape;
 
-    private function loadShp($file = null) {
-        if(is_null($file)) {
-            $file = $this->worldcities_shape;
-        }
-        return new ShapeReader($file);
+    /**
+     * @var ShapeReader
+     */
+    private $shpReader;
+
+    public function setUp() {
+        parent::setUp();
+
+        $this->worldcities_shape = __DIR__."/../../support/worldcities/worldcities.shp";
+
+        $this->shpReader = new ShapeReader($this->worldcities_shape);
     }
 
     public function testLoadShapefile() {
 
-        $shpReader = $this->loadShp();
-
         $rows = 0;
-        while ($record = $shpReader->getNext()) {
+        while ($record = $this->shpReader->getNext()) {
             $dbf = $record->getDbfData();
             $rows++;
         }
@@ -33,11 +38,9 @@ class ShapeReaderTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetDbfData() {
 
-        $shpReader = $this->loadShp();
-
         $rows = 0;
         $rowIndex = 11358;
-        while ($record = $shpReader->getNext()) {
+        while ($record = $this->shpReader->getNext()) {
             $dbf = $record->getDbfData();
             if($dbf['ID'] == $rowIndex) {
                 break;
