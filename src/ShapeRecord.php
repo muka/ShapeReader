@@ -2,12 +2,19 @@
 
 namespace muka\ShapeReader;
 
+use muka\ShapeReader\Exception\ShapeFileException;
+
 class ShapeRecord extends ShapeReader {
 
     private $record_number;
     private $content_length;
     private $record_shape_type;
     private $point_count = 0;
+
+    private $fp;
+    private $fpos;
+    private $options;
+    private $filename;
 
     /**
       0 Null Shape
@@ -25,13 +32,17 @@ class ShapeRecord extends ShapeReader {
       28 MultiPointM
       31 MultiPatch
      */
-    private $record_class = array(
+    private $record_class = [
       0 => "RecordNull",
       1 => "RecordPoint",
       3 => "RecordPolyLine",
       5 => "RecordPolygon",
       8 => "RecordMultiPoint",
-    );
+    ];
+
+    /**
+     * @var DbfFile
+     */
     private $dbf;
 
     public function __construct(&$fp, $filename, $options, $dbf= null) {
@@ -52,7 +63,7 @@ class ShapeRecord extends ShapeReader {
         if($this->dbf) {
             return $this->dbf->getData($this->record_number);
         }
-        return array();
+        return [];
     }
 
     public function getShpData() {
@@ -91,11 +102,11 @@ class ShapeRecord extends ShapeReader {
     private function getRecordClass() {
 
         if (!isset($this->record_class[$this->record_shape_type])) {
-            throw new Exception\ShapeFileException(sprintf("Unsupported record type encountered."));
+            throw new ShapeFileException(sprintf("Unsupported record type encountered."));
         }
 
         if (!method_exists($this, "read" . $this->record_class[$this->record_shape_type])) {
-            throw new Exception\ShapeFileException(sprintf("Record type %s not implemented.", $this->record_shape_type));
+            throw new ShapeFileException(sprintf("Record type %s not implemented.", $this->record_shape_type));
         }
 
         return $this->record_class[$this->record_shape_type];
@@ -114,7 +125,7 @@ class ShapeRecord extends ShapeReader {
 
     private function readRecordPoint(&$fp, $create_object = false, $options = null) {
 
-        $data = array();
+        $data = [];
 
         $data["x"] = $this->readAndUnpack("d", fread($fp, 8));
         $data["y"] = $this->readAndUnpack("d", fread($fp, 8));
@@ -156,8 +167,8 @@ class ShapeRecord extends ShapeReader {
             $points_read = 0;
             foreach ($data["parts"] as $part_index => $point_index) {
                 if (!isset($data["parts"][$part_index]["points"]) || !is_array($data["parts"][$part_index]["points"])) {
-                    $data["parts"][$part_index] = array();
-                    $data["parts"][$part_index]["points"] = array();
+                    $data["parts"][$part_index] = [];
+                    $data["parts"][$part_index]["points"] = [];
                 }
                 while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
