@@ -46,7 +46,7 @@ class DbfFile {
         unset($row["deleted"]);
 
         if (!dbase_replace_record($this->dbf, array_values($row), $this->record_number)) {
-            throw new Exception\DbfException("Error writing data to file.");
+            throw new Exception\DbfFileException("Error writing data to file.");
         } else {
             $this->data = $row;
         }
@@ -59,10 +59,10 @@ class DbfFile {
         if ($check_function($this->filename)) {
             $this->dbf = dbase_open($this->filename, ($check_writeable ? 2 : 0));
             if (!$this->dbf) {
-                throw new Exception\DbfException(sprintf("Error loading %s", $this->filename));
+                throw new Exception\DbfFileException(sprintf("Error loading %s", $this->filename));
             }
         } else {
-            throw new Exception\DbfException(sprintf("File doesn't exists (%s)", $this->filename));
+            throw new Exception\DbfFileException(sprintf("File doesn't exists (%s)", $this->filename));
         }
     }
 
