@@ -3,25 +3,16 @@ namespace muka\ShapeReader;
 
 use muka\ShapeReader\Exception\ShapeFileException;
 
-class ShapeRecord extends ShapeReader
-{
-
+class ShapeRecord extends ShapeReader {
     private $record_number;
-
     private $content_length;
-
     private $record_shape_type;
-
     private $point_count = 0;
-
     private $fp;
-
     private $fpos;
-
     private $options;
-
     private $filename;
-
+    
     /**
      * 0 Null Shape
      * 1 Point
@@ -53,15 +44,14 @@ class ShapeRecord extends ShapeReader
         25 => "PolygonM",
         28 => "MultiPointM"
     ];
-
+    
     /**
      *
      * @var DbfFile
      */
     private $dbf;
 
-    public function __construct(&$fp, $filename, $options, $dbf = null)
-    {
+    public function __construct(&$fp, $filename, $options, $dbf = null) {
         $this->fp = $fp;
         $this->fpos = ftell($fp);
         $this->options = $options;
@@ -70,27 +60,23 @@ class ShapeRecord extends ShapeReader
         $this->readHeader();
     }
 
-    public function getNextRecordPosition()
-    {
+    public function getNextRecordPosition() {
         $nextRecordPosition = $this->fpos + ((4 + $this->content_length) * 2);
         return $nextRecordPosition;
     }
 
-    public function getDbfData()
-    {
+    public function getDbfData() {
         if ($this->dbf) {
             return $this->dbf->getData($this->record_number);
         }
         return [];
     }
 
-    public function getShpData()
-    {
+    public function getShpData() {
         return $this->getData();
     }
 
-    public function getData()
-    {
+    public function getData() {
         if (! $this->data) {
             $recordType = $this->getRecordClass();
             $function_name = "read{$recordType}";
@@ -103,25 +89,21 @@ class ShapeRecord extends ShapeReader
         return $this->data;
     }
 
-    private function readHeader()
-    {
+    private function readHeader() {
         $this->record_number = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->content_length = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->record_shape_type = $this->readAndUnpack("i", fread($this->fp, 4));
     }
 
-    public function getTypeCode()
-    {
+    public function getTypeCode() {
         return $this->record_shape_type;
     }
 
-    public function getTypeLabel()
-    {
+    public function getTypeLabel() {
         return str_replace("Record", "", $this->getRecordClass());
     }
 
-    private function getRecordClass()
-    {
+    private function getRecordClass() {
         if (! isset($this->record_class[$this->record_shape_type])) {
             throw new ShapeFileException(sprintf("Unsupported record type encountered."));
         }
@@ -136,8 +118,7 @@ class ShapeRecord extends ShapeReader
     /**
      * Reading functions
      */
-    private function readRecordNull(&$fp, $read_shape_type = false, $options = null)
-    {
+    private function readRecordNull(&$fp, $read_shape_type = false, $options = null) {
         $data = array();
         if ($read_shape_type)
             $data += $this->readShapeType($fp);
@@ -145,8 +126,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPoint(&$fp, $create_object = false, $options = null)
-    {
+    private function readRecordPoint(&$fp, $create_object = false, $options = null) {
         $data = [];
         
         $data["x"] = $this->readAndUnpack("d", fread($fp, 8));
@@ -157,23 +137,20 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPointM(&$fp, $create_object = false, $options = null)
-    {
+    private function readRecordPointM(&$fp, $create_object = false, $options = null) {
         $data = $this->readRecordPoint($fp);
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
         return $data;
     }
 
-    private function readRecordPointZ(&$fp, $create_object = false, $options = null)
-    {
+    private function readRecordPointZ(&$fp, $create_object = false, $options = null) {
         $data = $this->readRecordPoint($fp);
         $data["z"] = $this->readAndUnpack("d", fread($fp, 8));
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
         return $data;
     }
 
-    private function readRecordMultiPoint(&$fp, $options = null)
-    {
+    private function readRecordMultiPoint(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -184,8 +161,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordMultiPointM(&$fp, $options = null)
-    {
+    private function readRecordMultiPointM(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -204,8 +180,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordMultiPointZ(&$fp, $options = null)
-    {
+    private function readRecordMultiPointZ(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -232,8 +207,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPolyLine(&$fp, $options = null)
-    {
+    private function readRecordPolyLine(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
@@ -268,8 +242,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPolyLineM(&$fp, $options = null)
-    {
+    private function readRecordPolyLineM(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
@@ -319,8 +292,7 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPolyLineZ(&$fp, $options = null)
-    {
+    private function readRecordPolyLineZ(&$fp, $options = null) {
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
@@ -382,18 +354,15 @@ class ShapeRecord extends ShapeReader
         return $data;
     }
 
-    private function readRecordPolygon(&$fp, $options = null)
-    {
+    private function readRecordPolygon(&$fp, $options = null) {
         return $this->readRecordPolyLine($fp, $options);
     }
 
-    private function readRecordPolygonM(&$fp, $options = null)
-    {
-        return $this->readRecordPolyLinem($fp, $options);
+    private function readRecordPolygonM(&$fp, $options = null) {
+        return $this->readRecordPolyLineM($fp, $options);
     }
 
-    private function readRecordPolygonZ(&$fp, $options = null)
-    {
+    private function readRecordPolygonZ(&$fp, $options = null) {
         return $this->readRecordPolyLineZ($fp, $options);
     }
 }
