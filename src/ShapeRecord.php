@@ -44,6 +44,7 @@ class ShapeRecord extends ShapeReader {
         25 => "PolygonM",
         28 => "MultiPointM"
     ];
+    // TODO: 28=>MultiPatch
     
     /**
      *
