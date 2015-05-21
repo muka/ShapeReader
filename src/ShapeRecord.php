@@ -52,6 +52,7 @@ class ShapeRecord extends ShapeReader {
     private $dbf;
 
     public function __construct(&$fp, $filename, $options, $dbf = null) {
+
         $this->fp = $fp;
         $this->fpos = ftell($fp);
         $this->options = $options;
@@ -61,11 +62,13 @@ class ShapeRecord extends ShapeReader {
     }
 
     public function getNextRecordPosition() {
+
         $nextRecordPosition = $this->fpos + ((4 + $this->content_length) * 2);
         return $nextRecordPosition;
     }
 
     public function getDbfData() {
+
         if ($this->dbf) {
             return $this->dbf->getData($this->record_number);
         }
@@ -73,10 +76,12 @@ class ShapeRecord extends ShapeReader {
     }
 
     public function getShpData() {
+
         return $this->getData();
     }
 
     public function getData() {
+
         if (! $this->data) {
             $recordType = $this->getRecordClass();
             $function_name = "read{$recordType}";
@@ -90,20 +95,24 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readHeader() {
+
         $this->record_number = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->content_length = $this->readAndUnpack("N", fread($this->fp, 4));
         $this->record_shape_type = $this->readAndUnpack("i", fread($this->fp, 4));
     }
 
     public function getTypeCode() {
+
         return $this->record_shape_type;
     }
 
     public function getTypeLabel() {
+
         return str_replace("Record", "", $this->getRecordClass());
     }
 
     private function getRecordClass() {
+
         if (! isset($this->record_class[$this->record_shape_type])) {
             throw new ShapeFileException(sprintf("Unsupported record type encountered."));
         }
@@ -119,6 +128,7 @@ class ShapeRecord extends ShapeReader {
      * Reading functions
      */
     private function readRecordNull(&$fp, $read_shape_type = false, $options = null) {
+
         $data = array();
         if ($read_shape_type)
             $data += $this->readShapeType($fp);
@@ -127,6 +137,7 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readRecordPoint(&$fp, $create_object = false, $options = null) {
+
         $data = [];
         
         $data["x"] = $this->readAndUnpack("d", fread($fp, 8));
@@ -138,19 +149,30 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readRecordPointM(&$fp, $create_object = false, $options = null) {
+
         $data = $this->readRecordPoint($fp);
+        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['m'] < $nodata) {
+            unset($data['m']);
+        }
         return $data;
     }
 
     private function readRecordPointZ(&$fp, $create_object = false, $options = null) {
+
         $data = $this->readRecordPoint($fp);
         $data["z"] = $this->readAndUnpack("d", fread($fp, 8));
+        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['m'] < $nodata) {
+            unset($data['m']);
+        }
         return $data;
     }
 
     private function readRecordMultiPoint(&$fp, $options = null) {
+
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -162,6 +184,17 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readRecordMultiPointM(&$fp, $options = null) {
+        
+        // [bounds:32],
+        // [numpoints:4],
+        // [point(1):16],
+        // ...
+        // [point(numpoints):16],
+        // [mmin:8],
+        // [mmax:8]
+        // [m(1):16],
+        // ...
+        // [m(numpoints):16]
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -169,18 +202,44 @@ class ShapeRecord extends ShapeReader {
             $data["points"][] = $this->readRecordPoint($fp);
         }
         
-        // read zmin, zmax
+        // read mmin, mmax
+        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
         $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['mmin'] < $nodata) {
+            unset($data['mmin']);
+        }
         $data['mmax'] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['mmax'] < $nodata) {
+            unset($data['mmax']);
+        }
         
         for ($i = 0; $i <= $data["numpoints"]; $i ++) {
             $data["points"][$i]['m'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data["parts"][$i]['m'] < $nodata) {
+                unset($data["parts"][$i]['m']);
+            }
         }
         
         return $data;
     }
 
     private function readRecordMultiPointZ(&$fp, $options = null) {
+        
+        // [bounds:32],
+        // [numpoints:4],
+        // [point(1):16],
+        // ...
+        // [point(numpoints):16],
+        // [zmin:8],
+        // [zmax:8]
+        // [z(1):16],
+        // ...
+        // [z(numpoints):16]
+        // [mmin:8],
+        // [mmax:8]
+        // [m(1):16],
+        // ...
+        // [m(numpoints):16]
         $data = $this->readBoundingBox($fp);
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
@@ -196,18 +255,29 @@ class ShapeRecord extends ShapeReader {
             $data["points"][$i]['z'] = $this->readAndUnpack("d", fread($fp, 8));
         }
         
-        // read zmin, zmax
+        // read mmin, mmax
+        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
         $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['mmin'] < $nodata) {
+            unset($data['mmin']);
+        }
         $data['mmax'] = $this->readAndUnpack("d", fread($fp, 8));
+        if ($data['mmax'] < $nodata) {
+            unset($data['mmax']);
+        }
         
         for ($i = 0; $i <= $data["numpoints"]; $i ++) {
             $data["points"][$i]['m'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data["parts"][$i]['m'] < $nodata) {
+                unset($data["parts"][$i]['m']);
+            }
         }
         
         return $data;
     }
 
     private function readRecordPolyLine(&$fp, $options = null) {
+
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
@@ -217,6 +287,7 @@ class ShapeRecord extends ShapeReader {
             // Skip the parts
             $points_initial_index = ftell($fp) + 4 * $data["numparts"];
             $points_read = $data["numpoints"];
+            fseek($fp, $points_initial_index + ($points_read * $this->XY_POINT_RECORD_LENGTH));
         } else {
             for ($i = 0; $i < $data["numparts"]; $i ++) {
                 $data["parts"][$i] = $this->readAndUnpack("i", fread($fp, 4));
@@ -237,86 +308,125 @@ class ShapeRecord extends ShapeReader {
             }
         }
         
-        // fseek($fp, $points_initial_index + ($points_read * $this->XY_POINT_RECORD_LENGTH));
-        
         return $data;
     }
 
     private function readRecordPolyLineM(&$fp, $options = null) {
+        
+        // [bounds:32],
+        // [numparts:4],
+        // [numpoints:4],
+        // [parts(1):4],
+        // ...
+        // [parts(numparts):4]
+        // [point(1):16],
+        // ...
+        // [point(numpoints):16],
+        // [mmin:8],
+        // [mmax:8]
+        // [m(1):16],
+        // ...
+        // [m(numpoints):16]
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
+        $points_initial_index = ftell($fp) + 4 * $data["numparts"];
+        
         if (isset($options['noparts']) && $options['noparts'] == true) {
             // Skip the parts
-            $points_initial_index = ftell($fp) + 4 * $data["numparts"];
             $points_read = $data["numpoints"];
+            fseek($fp, 
+                $points_initial_index + ($points_read * $this->XYM_POINT_RECORD_LENGTH) +
+                     ($points_read * $this->XYM_POINT_RECORD_LENGTH) + $this->RANGE_LENGTH);
         } else {
+            
+            // array of indexes to the start of each part,
+            // moved this out of $data["parts"] for reuse. (normally)
+            // this is cleared and set to an array (points) on first xy point
+            $parts = [];
+            $data['parts'] = [];
             for ($i = 0; $i < $data["numparts"]; $i ++) {
-                $data["parts"][$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $parts[$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $data["parts"][$i] = [
+                    "points" => []
+                ];
             }
             
-            $points_initial_index = ftell($fp);
-            
             $points_read = 0;
-            foreach ($data["parts"] as $part_index => $point_index) {
-                if (! isset($data["parts"][$part_index]["points"]) || ! is_array($data["parts"][$part_index]["points"])) {
-                    $data["parts"][$part_index] = [];
-                    $data["parts"][$part_index]["points"] = [];
-                }
+            foreach ($parts as $part_index => $point_index) {
                 while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                    
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
+                    
                     $points_read ++;
                 }
             }
             
-            // read zmin, zmax
+            // read mmin, mmax
+            $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
             $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmin'] < $nodata) {
+                unset($data['mmin']);
+            }
             $data['mmax'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmax'] < $nodata) {
+                unset($data['mmax']);
+            }
             
             $points_read = 0;
-            foreach ($data["parts"] as $part_index => $point_index) {
-                
+            
+            foreach ($parts as $part_index => $point_index) {
+                $point = 0;
                 while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
-                    $point = 0;
-                    $data["parts"][$part_index]["points"][$point]['z'] = $this->readAndUnpack("d", fread($fp, 8));
+                    $data["parts"][$part_index]["points"][$point]['m'] = $this->readAndUnpack("d", fread($fp, 8));
+                    if ($data["parts"][$part_index]["points"][$point]['m'] < $nodata) {
+                        unset($data["parts"][$part_index]["points"][$point]['m']);
+                    }
                     $points_read ++;
                     $point ++;
                 }
             }
         }
         
-        // fseek($fp, $points_initial_index + ($points_read * $this->XYM_POINT_RECORD_LENGTH)+16);
-        
         return $data;
     }
 
     private function readRecordPolyLineZ(&$fp, $options = null) {
+
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
         $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
         
+        $points_initial_index = ftell($fp) + 4 * $data["numparts"];
+        
         if (isset($options['noparts']) && $options['noparts'] == true) {
             // Skip the parts
-            $points_initial_index = ftell($fp) + 4 * $data["numparts"];
             $points_read = $data["numpoints"];
+            fseek($fp, 
+                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
         } else {
+            
+            // array of indexes to the start of each part,
+            // moved this out of $data["parts"] for reuse. (normally)
+            // this is cleared and set to an array (points) on first xy point
+            $parts = [];
+            $data['parts'] = [];
             for ($i = 0; $i < $data["numparts"]; $i ++) {
-                $data["parts"][$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $parts[$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $data["parts"][$i] = [
+                    "points" => []
+                ];
             }
             
-            $points_initial_index = ftell($fp);
-            
             $points_read = 0;
-            foreach ($data["parts"] as $part_index => $point_index) {
-                if (! isset($data["parts"][$part_index]["points"]) || ! is_array($data["parts"][$part_index]["points"])) {
-                    $data["parts"][$part_index] = [];
-                    $data["parts"][$part_index]["points"] = [];
-                }
+            foreach ($parts as $part_index => $point_index) {
                 while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                    
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
+                    
                     $points_read ++;
                 }
             }
@@ -325,7 +435,7 @@ class ShapeRecord extends ShapeReader {
             $data['zmax'] = $this->readAndUnpack("d", fread($fp, 8));
             
             $points_read = 0;
-            foreach ($data["parts"] as $part_index => $point_index) {
+            foreach ($parts as $part_index => $point_index) {
                 $point = 0;
                 while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
                     $data["parts"][$part_index]["points"][$point]['z'] = $this->readAndUnpack("d", fread($fp, 8));
@@ -334,35 +444,47 @@ class ShapeRecord extends ShapeReader {
                 }
             }
             
-            // read zmin, zmax
+            // read mmin, mmax
+            $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
             $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmin'] < $nodata) {
+                unset($data['mmin']);
+            }
             $data['mmax'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmax'] < $nodata) {
+                unset($data['mmax']);
+            }
             
             $points_read = 0;
-            foreach ($data["parts"] as $part_index => $point_index) {
+            
+            foreach ($parts as $part_index => $point_index) {
                 $point = 0;
                 while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
                     $data["parts"][$part_index]["points"][$point]['m'] = $this->readAndUnpack("d", fread($fp, 8));
+                    if ($data["parts"][$part_index]["points"][$point]['m'] < $nodata) {
+                        unset($data["parts"][$part_index]["points"][$point]['m']);
+                    }
                     $points_read ++;
                     $point ++;
                 }
             }
         }
         
-        // fseek($fp, $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH));
-        
         return $data;
     }
 
     private function readRecordPolygon(&$fp, $options = null) {
+
         return $this->readRecordPolyLine($fp, $options);
     }
 
     private function readRecordPolygonM(&$fp, $options = null) {
+
         return $this->readRecordPolyLineM($fp, $options);
     }
 
     private function readRecordPolygonZ(&$fp, $options = null) {
+
         return $this->readRecordPolyLineZ($fp, $options);
     }
 }
