@@ -82,7 +82,7 @@ class ShapeRecord extends ShapeReader {
 
     public function getData() {
 
-        if (! $this->data) {
+        if (!$this->data) {
             $recordType = $this->getRecordClass();
             $function_name = "read{$recordType}";
             
@@ -113,11 +113,11 @@ class ShapeRecord extends ShapeReader {
 
     private function getRecordClass() {
 
-        if (! isset($this->record_class[$this->record_shape_type])) {
+        if (!isset($this->record_class[$this->record_shape_type])) {
             throw new ShapeFileException(sprintf("Unsupported record type encountered."));
         }
         
-        if (! method_exists($this, "read" . $this->record_class[$this->record_shape_type])) {
+        if (!method_exists($this, "read" . $this->record_class[$this->record_shape_type])) {
             throw new ShapeFileException(sprintf("Record type %s not implemented.", $this->record_shape_type));
         }
         
@@ -151,7 +151,7 @@ class ShapeRecord extends ShapeReader {
     private function readRecordPointM(&$fp, $create_object = false, $options = null) {
 
         $data = $this->readRecordPoint($fp);
-        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+        $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
         if ($data['m'] < $nodata) {
             unset($data['m']);
@@ -163,7 +163,7 @@ class ShapeRecord extends ShapeReader {
 
         $data = $this->readRecordPoint($fp);
         $data["z"] = $this->readAndUnpack("d", fread($fp, 8));
-        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+        $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
         $data["m"] = $this->readAndUnpack("d", fread($fp, 8));
         if ($data['m'] < $nodata) {
             unset($data['m']);
@@ -203,7 +203,7 @@ class ShapeRecord extends ShapeReader {
         }
         
         // read mmin, mmax
-        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+        $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
         $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
         if ($data['mmin'] < $nodata) {
             unset($data['mmin']);
@@ -256,7 +256,7 @@ class ShapeRecord extends ShapeReader {
         }
         
         // read mmin, mmax
-        $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+        $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
         $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
         if ($data['mmin'] < $nodata) {
             unset($data['mmin']);
@@ -297,11 +297,11 @@ class ShapeRecord extends ShapeReader {
             
             $points_read = 0;
             foreach ($data["parts"] as $part_index => $point_index) {
-                if (! isset($data["parts"][$part_index]["points"]) || ! is_array($data["parts"][$part_index]["points"])) {
+                if (!isset($data["parts"][$part_index]["points"]) || !is_array($data["parts"][$part_index]["points"])) {
                     $data["parts"][$part_index] = [];
                     $data["parts"][$part_index]["points"] = [];
                 }
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
                     $points_read ++;
                 }
@@ -356,7 +356,7 @@ class ShapeRecord extends ShapeReader {
             
             $points_read = 0;
             foreach ($parts as $part_index => $point_index) {
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
                     
@@ -365,7 +365,7 @@ class ShapeRecord extends ShapeReader {
             }
             
             // read mmin, mmax
-            $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+            $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
             $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
             if ($data['mmin'] < $nodata) {
                 unset($data['mmin']);
@@ -379,7 +379,7 @@ class ShapeRecord extends ShapeReader {
             
             foreach ($parts as $part_index => $point_index) {
                 $point = 0;
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     $data["parts"][$part_index]["points"][$point]['m'] = $this->readAndUnpack("d", fread($fp, 8));
                     if ($data["parts"][$part_index]["points"][$point]['m'] < $nodata) {
                         unset($data["parts"][$part_index]["points"][$point]['m']);
@@ -405,8 +405,8 @@ class ShapeRecord extends ShapeReader {
         if (isset($options['noparts']) && $options['noparts'] == true) {
             // Skip the parts
             $points_read = $data["numpoints"];
-            fseek($fp, 
-                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
+            fseek($fp, $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) +
+                 (2 * $this->RANGE_LENGTH));
         } else {
             
             // array of indexes to the start of each part,
@@ -423,7 +423,7 @@ class ShapeRecord extends ShapeReader {
             
             $points_read = 0;
             foreach ($parts as $part_index => $point_index) {
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     
                     $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
                     
@@ -437,7 +437,7 @@ class ShapeRecord extends ShapeReader {
             $points_read = 0;
             foreach ($parts as $part_index => $point_index) {
                 $point = 0;
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     $data["parts"][$part_index]["points"][$point]['z'] = $this->readAndUnpack("d", fread($fp, 8));
                     $points_read ++;
                     $point ++;
@@ -445,7 +445,7 @@ class ShapeRecord extends ShapeReader {
             }
             
             // read mmin, mmax
-            $nodata = - pow(10, 38); // any m smaller than this is considered "no data"
+            $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
             $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
             if ($data['mmin'] < $nodata) {
                 unset($data['mmin']);
@@ -459,7 +459,7 @@ class ShapeRecord extends ShapeReader {
             
             foreach ($parts as $part_index => $point_index) {
                 $point = 0;
-                while (! in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && ! feof($fp)) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
                     $data["parts"][$part_index]["points"][$point]['m'] = $this->readAndUnpack("d", fread($fp, 8));
                     if ($data["parts"][$part_index]["points"][$point]['m'] < $nodata) {
                         unset($data["parts"][$part_index]["points"][$point]['m']);

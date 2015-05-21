@@ -69,7 +69,7 @@ class ShapeReader {
 
     private function fopen() {
 
-        if (! is_readable($this->filename)) {
+        if (!is_readable($this->filename)) {
             throw new ShapeFileException(sprintf("%s is not readable.", $this->filename));
         }
         $this->fp = fopen($this->filename, "rb");
@@ -86,7 +86,7 @@ class ShapeReader {
 
     public function getNext() {
 
-        if (! feof($this->fp) && $this->fpos < $this->fsize) {
+        if (!feof($this->fp) && $this->fpos < $this->fsize) {
             
             fseek($this->fp, $this->fpos);
             $record = new ShapeRecord($this->fp, $this->filename, $this->options, $this->dbf);
@@ -111,7 +111,7 @@ class ShapeReader {
 
     protected function readAndUnpack($type, $data) {
 
-        if (! $data) {
+        if (!$data) {
             return $data;
         }
         
