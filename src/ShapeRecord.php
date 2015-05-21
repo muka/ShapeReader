@@ -394,7 +394,26 @@ class ShapeRecord extends ShapeReader {
     }
 
     private function readRecordPolyLineZ(&$fp, $options = null) {
-
+        
+        // [bounds:32],
+        // [numparts:4],
+        // [numpoints:4],
+        // [parts(1):4],
+        // ...
+        // [parts(numparts):4]
+        // [point(1):16],
+        // ...
+        // [point(numpoints):16],
+        // [zmin:8],
+        // [zmax:8]
+        // [z(1):16],
+        // ...
+        // [z(numpoints):16]
+        // [mmin:8],
+        // [mmax:8]
+        // [m(1):16],
+        // ...
+        // [m(numpoints):16]
         $data = $this->readBoundingBox($fp);
         
         $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
@@ -405,8 +424,8 @@ class ShapeRecord extends ShapeReader {
         if (isset($options['noparts']) && $options['noparts'] == true) {
             // Skip the parts
             $points_read = $data["numpoints"];
-            fseek($fp, $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) +
-                 (2 * $this->RANGE_LENGTH));
+            fseek($fp, 
+                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
         } else {
             
             // array of indexes to the start of each part,
