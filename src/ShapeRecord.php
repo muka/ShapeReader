@@ -133,16 +133,12 @@ class ShapeRecord extends ShapeReader {
     /**
      * Reading functions
      */
-    private function readRecordNull($read_shape_type = false, $options = null) {
+    private function readRecordNull($options = null) {
 
-        $data = array();
-        if ($read_shape_type)
-            $data += $this->readShapeType($this->fp);
-        
-        return $data;
+        return array();
     }
 
-    private function readRecordPoint($create_object = false, $options = null) {
+    private function readRecordPoint($options = null) {
 
         $data = [];
         
@@ -154,7 +150,7 @@ class ShapeRecord extends ShapeReader {
         return $data;
     }
 
-    private function readRecordPointM($create_object = false, $options = null) {
+    private function readRecordPointM($options = null) {
 
         $data = $this->readRecordPoint($this->fp);
         $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
