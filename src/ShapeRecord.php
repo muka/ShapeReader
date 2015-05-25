@@ -42,9 +42,10 @@ class ShapeRecord extends ShapeReader {
         21 => "PointM",
         23 => "PolyLineM",
         25 => "PolygonM",
-        28 => "MultiPointM"
+        28 => "MultiPointM",
+        31 => "MultiPatch"
     ];
-    // TODO: 28=>MultiPatch
+    // TODO: 31=>MultiPatch
     
     /**
      *
@@ -506,5 +507,112 @@ class ShapeRecord extends ShapeReader {
     private function readRecordPolygonZ(&$fp, $options = null) {
 
         return $this->readRecordPolyLineZ($fp, $options);
+    }
+
+    private function readRecordMultipatch(&$fp, $options = null) {
+        
+        // [bounds:32],
+        // [numparts:4],
+        // [numpoints:4],
+        // [parts(1):4],
+        // ...
+        // [parts(numparts):4]
+        // [parttypes(1):4],
+        // ...
+        // [parttypes(numparts):4]
+        // [point(1):16],
+        // ...
+        // [point(numpoints):16],
+        // [zmin:8],
+        // [zmax:8]
+        // [z(1):16],
+        // ...
+        // [z(numpoints):16]
+        // [mmin:8],
+        // [mmax:8]
+        // [m(1):16],
+        // ...
+        // [m(numpoints):16]
+        $data = $this->readBoundingBox($fp);
+        
+        $data["numparts"] = $this->readAndUnpack("i", fread($fp, 4));
+        $data["numpoints"] = $this->readAndUnpack("i", fread($fp, 4));
+        
+        $points_initial_index = ftell($fp) + 4 * $data["numparts"];
+        
+        if (isset($options['noparts']) && $options['noparts'] == true) {
+            // Skip the parts
+            $points_read = $data["numpoints"];
+            fseek($fp, 
+                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
+        } else {
+            
+            // array of indexes to the start of each part,
+            // moved this out of $data["parts"] for reuse. (normally)
+            // this is cleared and set to an array (points) on first xy point
+            $parts = [];
+            $data['parts'] = [];
+            for ($i = 0; $i < $data["numparts"]; $i ++) {
+                $parts[$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $data["parts"][$i] = [
+                    "points" => []
+                ];
+            }
+            
+            for ($i = 0; $i < $data["numparts"]; $i ++) {
+                $parts[$i] = $this->readAndUnpack("i", fread($fp, 4));
+                $data["parts"][$i]['type'] = $this->readAndUnpack("i", fread($fp, 4));
+            }
+            
+            $points_read = 0;
+            foreach ($parts as $part_index => $point_index) {
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
+                    
+                    $data["parts"][$part_index]["points"][] = $this->readRecordPoint($fp, true);
+                    
+                    $points_read ++;
+                }
+            }
+            // read zmin, zmax
+            $data['zmin'] = $this->readAndUnpack("d", fread($fp, 8));
+            $data['zmax'] = $this->readAndUnpack("d", fread($fp, 8));
+            
+            $points_read = 0;
+            foreach ($parts as $part_index => $point_index) {
+                $point = 0;
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
+                    $data["parts"][$part_index]["points"][$point]['z'] = $this->readAndUnpack("d", fread($fp, 8));
+                    $points_read ++;
+                    $point ++;
+                }
+            }
+            
+            // read mmin, mmax
+            $nodata = -pow(10, 38); // any m smaller than this is considered "no data"
+            $data['mmin'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmin'] < $nodata) {
+                unset($data['mmin']);
+            }
+            $data['mmax'] = $this->readAndUnpack("d", fread($fp, 8));
+            if ($data['mmax'] < $nodata) {
+                unset($data['mmax']);
+            }
+            
+            $points_read = 0;
+            
+            foreach ($parts as $part_index => $point_index) {
+                $point = 0;
+                while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($fp)) {
+                    $data["parts"][$part_index]["points"][$point]['m'] = $this->readAndUnpack("d", fread($fp, 8));
+                    if ($data["parts"][$part_index]["points"][$point]['m'] < $nodata) {
+                        unset($data["parts"][$part_index]["points"][$point]['m']);
+                    }
+                    $points_read ++;
+                    $point ++;
+                }
+            }
+        }
+        
+        return $data;
     }
 }
