@@ -19,7 +19,7 @@ use muka\ShapeReader\Exception\ShapeFileException;
 
 class ShapeReader {
     private $filename;
-    private $fp;
+    protected $fp;
     private $dbf;
     private $fpos = 100;
     private $fsize = 0;
@@ -27,18 +27,18 @@ class ShapeReader {
     private $bbox = [];
     private $point_count = 0;
     public $XY_POINT_RECORD_LENGTH = 16;
-    
+
     // $XYM_POINT_RECORD_LENGTH represents xy point plus measure.
     // xy points are seperated from m points by mmin[8], mmax[8]
     // this only reflects the size of one xy and m point
     public $XYM_POINT_RECORD_LENGTH = 24;
-    
+
     // xyz represents xy point plus measure(m), and z.
     // xy points are seperated from z points by zmin[8], zmax[8] and m points are
     // seperated from z points by mmin[8], mmax[8]
     // this only reflects the size of one xy m z point
     public $XYZ_POINT_RECORD_LENGTH = 32;
-    
+
     // the size of [zmin, zmax], or [mmin, mmax]
     public $RANGE_LENGTH = 16;
     protected $data;
@@ -47,11 +47,11 @@ class ShapeReader {
     public function __construct($filename, $options = []) {
 
         $this->filename = $filename;
-        
+
         $this->fopen();
         $this->readConfig();
         $this->dbf = new DbfFile($this->filename, $this->options);
-        
+
         $this->options = $options;
     }
 
@@ -81,31 +81,31 @@ class ShapeReader {
 
         fseek($this->fp, 32, SEEK_SET);
         $this->shp_type = $this->readAndUnpack("i", fread($this->fp, 4));
-        $this->bbox = $this->readBoundingBox($this->fp);
+        $this->bbox = $this->readBoundingBox();
     }
 
     public function getNext() {
 
         if (!feof($this->fp) && $this->fpos < $this->fsize) {
-            
+
             fseek($this->fp, $this->fpos);
             $record = new ShapeRecord($this->fp, $this->filename, $this->options, $this->dbf);
             $this->fpos = $record->getNextRecordPosition();
-            
+
             return $record;
         }
-        
+
         return false;
     }
 
-    protected function readBoundingBox(&$fp) {
+    protected function readBoundingBox() {
 
         $data = [];
-        $data["xmin"] = $this->readAndUnpack("d", fread($fp, 8));
-        $data["ymin"] = $this->readAndUnpack("d", fread($fp, 8));
-        $data["xmax"] = $this->readAndUnpack("d", fread($fp, 8));
-        $data["ymax"] = $this->readAndUnpack("d", fread($fp, 8));
-        
+        $data["xmin"] = $this->readAndUnpack("d", fread($this->fp, 8));
+        $data["ymin"] = $this->readAndUnpack("d", fread($this->fp, 8));
+        $data["xmax"] = $this->readAndUnpack("d", fread($this->fp, 8));
+        $data["ymax"] = $this->readAndUnpack("d", fread($this->fp, 8));
+
         return $data;
     }
 
@@ -114,7 +114,7 @@ class ShapeReader {
         if (!$data) {
             return $data;
         }
-        
+
         return current(unpack($type, $data));
     }
 }
