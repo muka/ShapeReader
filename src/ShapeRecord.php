@@ -289,7 +289,7 @@ class ShapeRecord extends ShapeReader {
             // Skip the parts
             $points_initial_index = ftell($fp) + 4 * $data["numparts"];
             $points_read = $data["numpoints"];
-            fseek($fp, $points_initial_index + ($points_read * $this->XY_POINT_RECORD_LENGTH));
+            fseek($fp, $points_initial_index + ($points_read * (4 + $this->XY_POINT_RECORD_LENGTH)));
         } else {
             for ($i = 0; $i < $data["numparts"]; $i ++) {
                 $data["parts"][$i] = $this->readAndUnpack("i", fread($fp, 4));
@@ -340,7 +340,7 @@ class ShapeRecord extends ShapeReader {
             // Skip the parts
             $points_read = $data["numpoints"];
             fseek($fp, 
-                $points_initial_index + ($points_read * $this->XYM_POINT_RECORD_LENGTH) +
+                $points_initial_index + ($points_read * (4 + $this->XYM_POINT_RECORD_LENGTH)) +
                      ($points_read * $this->XYM_POINT_RECORD_LENGTH) + $this->RANGE_LENGTH);
         } else {
             
@@ -427,7 +427,7 @@ class ShapeRecord extends ShapeReader {
             // Skip the parts
             $points_read = $data["numpoints"];
             fseek($fp, 
-                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
+                $points_initial_index + ($points_read * (4 + $this->XYZ_POINT_RECORD_LENGTH)) + (2 * $this->RANGE_LENGTH));
         } else {
             
             // array of indexes to the start of each part,
@@ -544,7 +544,7 @@ class ShapeRecord extends ShapeReader {
             // Skip the parts
             $points_read = $data["numpoints"];
             fseek($fp, 
-                $points_initial_index + ($points_read * $this->XYZ_POINT_RECORD_LENGTH) + (2 * $this->RANGE_LENGTH));
+                $points_initial_index + ($points_read * (8 + $this->XYZ_POINT_RECORD_LENGTH)) + (2 * $this->RANGE_LENGTH));
         } else {
             
             // array of indexes to the start of each part,
