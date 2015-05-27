@@ -21,7 +21,10 @@ php:
   - hhvm
 
 # omitting "script:" will default to phpunit
-script: 
-composer install
-phpunit --configuration phpunit.xml
+
+before_script:
+- composer install
+
+
+script: phpunit --configuration phpunit.xml
 
