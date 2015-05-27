@@ -21,5 +21,5 @@ php:
   - hhvm
 
 # omitting "script:" will default to phpunit
-script: phpunit phpunit --configuration phpunit.xml
+script: phpunit --configuration phpunit.xml
 
