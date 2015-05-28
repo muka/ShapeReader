@@ -13,9 +13,9 @@ php:
   # aliased to a recent 5.6.x version
   - 5.6
   # aliased to a recent 7.x version
-  - 7.0
+  #- 7.0
   # aliased to a recent hhvm version
-  - hhvm
+  #- hhvm
 
 # omitting "script:" will default to phpunit
 
