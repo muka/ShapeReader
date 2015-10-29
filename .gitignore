@@ -1,3 +1,6 @@
 nbproject/
 vendor/
 composer.lock
+/.buildpath
+/.project
+/.settings/
