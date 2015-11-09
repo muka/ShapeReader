@@ -209,8 +209,8 @@ class ShapeRecord extends ShapeReader {
         
         for ($i = 0; $i <= $data["numpoints"]; $i ++) {
             $data["points"][$i]['m'] = $this->readAndUnpack("d", fread($this->fp, 8));
-            if ($data["parts"][$i]['m'] < $nodata) {
-                unset($data["parts"][$i]['m']);
+            if ($data["points"][$i]['m'] < $nodata) {
+                unset($data["points"][$i]['m']);
             }
         }
     }
