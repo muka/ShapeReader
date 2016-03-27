@@ -2,7 +2,8 @@
 
 namespace muka\ShapeReader;
 
-class DbfFile {
+class DbfFile
+{
 
     private $filename;
     private $data;
@@ -10,14 +11,17 @@ class DbfFile {
     private $dbf;
     private $options;
 
-    public function __construct($shpFilename, $options = array()) {
+    public function __construct($shpFilename, $options = array())
+    {
         $this->filename = $this->getFilename($shpFilename);
         $this->options = $options;
+
     }
 
-    public function getFilename($filename) {
+    public function getFilename($filename)
+    {
 
-        if($this->filename) {
+        if ($this->filename) {
             return $this->filename;
         }
 
@@ -32,7 +36,8 @@ class DbfFile {
         return $filename;
     }
 
-    public function getData($record_number) {
+    public function getData($record_number)
+    {
 
         $this->record_number = $record_number;
         $this->load();
@@ -40,7 +45,8 @@ class DbfFile {
         return $this->data;
     }
 
-    public function setData(array $row) {
+    public function setData(array $row)
+    {
 
         $this->open(true);
         unset($row["deleted"]);
@@ -54,7 +60,8 @@ class DbfFile {
         $this->close();
     }
 
-    private function open($check_writeable = false) {
+    private function open($check_writeable = false)
+    {
         $check_function = $check_writeable ? "is_writable" : "is_readable";
         if ($check_function($this->filename)) {
             $this->dbf = dbase_open($this->filename, ($check_writeable ? 2 : 0));
@@ -66,31 +73,43 @@ class DbfFile {
         }
     }
 
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->close();
     }
 
-    private function close() {
+    private function close()
+    {
         if ($this->dbf) {
             dbase_close($this->dbf);
             $this->dbf = null;
         }
     }
 
-    private function load() {
-        $this->open();
+    private function load()
+    {
+
+        if (!$this->dbf) {
+            $this->open();
+        }
+        //$this->open();
         $this->data = dbase_get_record_with_names($this->dbf, $this->record_number);
-        if(!isset($this->options['normalize'])
-                || (isset($this->options['normalize']) && $this->options['normalize'])) {
+        if (!isset($this->options['normalize'])
+            || (isset($this->options['normalize']) && $this->options['normalize'])) {
             $this->normalize();
         }
-        $this->close();
+        //$this->close();
     }
 
-    private function normalize() {
-        foreach($this->data as $key => &$value) {
+    private function normalize()
+    {
+        foreach ($this->data as $key => &$value) {
             $value = trim(utf8_encode($value));
         }
     }
 
+}
+
+if (!function_exists('dbase_open')) {
+    include __DIR__ . DIRECTORY_SEPARATOR . 'dbase.php';
 }
