@@ -38,14 +38,14 @@ class ShapeRecord extends ShapeReader {
         11 => "RecordPointZ",
         13 => "RecordPolyLineZ",
         15 => "RecordPolygonZ",
-        18 => "MultiPointZ",
-        21 => "PointM",
-        23 => "PolyLineM",
-        25 => "PolygonM",
-        28 => "MultiPointM",
-        31 => "MultiPatch"
+        18 => "RecordMultiPointZ",
+        21 => "RecordPointM",
+        23 => "RecordPolyLineM",
+        25 => "RecordPolygonM",
+        28 => "RecordMultiPointM",
+        31 => "RecordMultiPatch"
     ];
-    // TODO: 31=>MultiPatch
+ 
     
     /**
      *
