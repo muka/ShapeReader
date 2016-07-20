@@ -50,9 +50,8 @@ class ShapeReader {
 
         $this->fopen();
         $this->readConfig();
-        $this->dbf = new DbfFile($this->filename, $this->options);
-
         $this->options = $options;
+        $this->dbf = new DbfFile($this->filename, $this->options);
     }
 
     public function __destruct() {
