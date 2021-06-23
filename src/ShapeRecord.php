@@ -308,7 +308,7 @@ class ShapeRecord extends ShapeReader {
                 $maxIndex=$parts[$part_index+1];
             }
             
-            while (($maxIndex>0||$points_read<$maxIndex) && $points_read < $data["numpoints"] && !feof($this->fp)) {
+            while (($maxIndex<0||$points_read<$maxIndex) && $points_read < $data["numpoints"] && !feof($this->fp)) {
                 
                 $data["parts"][$part_index]["points"][] = $this->readRecordPoint($this->fp, true);
                 
