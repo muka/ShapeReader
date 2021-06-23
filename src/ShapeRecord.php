@@ -293,6 +293,8 @@ class ShapeRecord extends ShapeReader {
                 "points" => []
             ];
         }
+        $data['partinfo']=$parts;
+
         return $parts;
     }
 
