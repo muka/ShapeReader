@@ -38,14 +38,14 @@ class ShapeRecord extends ShapeReader {
         11 => "RecordPointZ",
         13 => "RecordPolyLineZ",
         15 => "RecordPolygonZ",
-        18 => "MultiPointZ",
-        21 => "PointM",
-        23 => "PolyLineM",
-        25 => "PolygonM",
-        28 => "MultiPointM",
-        31 => "MultiPatch"
+        18 => "RecordMultiPointZ",
+        21 => "RecordPointM",
+        23 => "RecordPolyLineM",
+        25 => "RecordPolygonM",
+        28 => "RecordMultiPointM",
+        31 => "RecordMultiPatch"
     ];
-    // TODO: 31=>MultiPatch
+ 
     
     /**
      *
@@ -293,6 +293,8 @@ class ShapeRecord extends ShapeReader {
                 "points" => []
             ];
         }
+        $data['partinfo']=$parts;
+
         return $parts;
     }
 
@@ -300,7 +302,13 @@ class ShapeRecord extends ShapeReader {
 
         $points_read = 0;
         foreach ($parts as $part_index => $point_index) {
-            while (!in_array($points_read, $data["parts"]) && $points_read < $data["numpoints"] && !feof($this->fp)) {
+
+            $maxIndex=-1;
+            if(count($parts)>$part_index+1){
+                $maxIndex=$parts[$part_index+1];
+            }
+            
+            while (($maxIndex<0||$points_read<$maxIndex) && $points_read < $data["numpoints"] && !feof($this->fp)) {
                 
                 $data["parts"][$part_index]["points"][] = $this->readRecordPoint($this->fp, true);
                 
